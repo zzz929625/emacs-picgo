@@ -1,4 +1,4 @@
-# picgo.el - PicGo integration for Emacs
+# Emacs-Picgo - PicGo integration for Emacs
 
 这个Emacs插件提供了与[PicGo](https://github.com/PicGo/PicGo-Core)和[piclist](https://github.com/Kuingsmile/PicList)的集成，能够方便地在Emacs中上传图片到图床，并自动替换或插入图片链接。
 
