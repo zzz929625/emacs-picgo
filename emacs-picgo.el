@@ -7,9 +7,6 @@
 
 ;;; Code:
 
-;; ======================================================
-;; 工具函数
-;; ======================================================
 
 (defgroup picgo nil
   "PicGo integration for Emacs."
@@ -346,5 +343,5 @@
                      (match-string 1 output))
                  output)))))
 
-(provide 'picgo)
-;;; picgo.el ends here
+(provide 'emacs-picgo)
+;;; emacs-picgo.el ends here
