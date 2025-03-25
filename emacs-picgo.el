@@ -38,10 +38,8 @@
          (not (string-match-p "[\"']" url))   ;; 确保不包含引号
          (not (string-match-p "<.*>$" url))   ;; 确保不是HTML标签
          (or
-          ;; 远程URL
           (and (string-match-p "^https?://" url)
                (string-match-p "\\(?:\\.[a-zA-Z]\\{3,4\\}\\)?\\(?:png\\|jpe?g\\|gif\\|svg\\|webp\\)\\(?:[?#].*\\)?$" url))
-          ;; 本地文件
           (and (picgo--is-local-file-p url)
                (let ((expanded-path (picgo--expand-image-path url)))
                  (or (and (file-exists-p expanded-path)
@@ -139,7 +137,6 @@
              (match-end (+ line-start (match-end 0)))
              (url (match-string 2 line))
              (desc (match-string 1 line)))
-        ;; 确保我们找到的URL是完整的，不是另一个链接的一部分
         (when (and url 
                    (not (string-match-p "\\](" url))
                    (or (string-match-p "^https?://" url)
@@ -161,7 +158,6 @@
              (url (match-string 1 line))
              (desc (match-string 2 line))
              (link-type (if desc 'org-with-desc 'org)))
-        ;; 只保留图片链接
         (when (and url (picgo--is-image-url-p url))
           (push (list match-start match-end url desc link-type) links))
         (setq start (match-end 0))))
@@ -176,14 +172,12 @@
          (point-offset (- (point) line-start))
          links
          result)
-    ;; 根据buffer类型选择解析方法
     (setq links 
           (pcase buffer-type
             ('markdown (picgo--find-markdown-img-links-in-line line line-start))
             ('org (picgo--find-org-links-in-line line line-start))
             (_ nil)))
     
-    ;; 查找当前点所在的链接
     (setq result
           (cl-find-if (lambda (link)
                        (let ((start (nth 0 link))
@@ -191,7 +185,6 @@
                          (<= start (point) end)))
                      links))
     
-    ;; 如果找到链接，检查是否是图片
     (when (and result (picgo--is-image-url-p (nth 2 result)))
       result)))
 
@@ -211,7 +204,6 @@
                   ('org (picgo--find-org-links-in-line line line-start))
                   (_ nil))))
           
-          ;; 添加行中找到的所有链接
           (setq links (append line-links links))
           
           (forward-line 1))))
@@ -269,7 +261,6 @@
         (success 0)
         (failed 0))
     
-    ;; 按照位置从后向前排序链接，这样替换时不会影响后面链接的位置
     (setq links (sort links (lambda (a b) (> (car a) (car b)))))
     
     (dolist (link links)
@@ -280,9 +271,7 @@
              (link-type (nth 4 link))
              (original-link (buffer-substring-no-properties start end)))
         
-        ;; 检查链接是否已处理过
         (unless (gethash original-link processed-links)
-          ;; 确认这是一个有效的图片URL
           (when (picgo--is-image-url-p url)
             (setq total (1+ total))
             (let* ((upload-result (picgo--upload-image url))
@@ -305,7 +294,6 @@
                             (setq success (1+ success)))))))
                 (setq failed (1+ failed)))))
           
-          ;; 标记链接为已处理
           (puthash original-link t processed-links))))
     
     (message "批量上传完成：共处理 %d 个图片链接，成功 %d 个，失败 %d 个" 
@@ -318,7 +306,6 @@
   (interactive)
   (picgo--check-installation)
   (let* ((buffer-type (picgo--get-buffer-type))
-         ;; 在org模式下不使用描述，在markdown模式下询问
          (desc (cond 
                 ((eq buffer-type 'org) nil)
                 (description description)
